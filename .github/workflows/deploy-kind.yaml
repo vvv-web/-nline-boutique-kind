@@ -1,0 +1,24 @@
+name: Deploy to local Kind
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, X64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write kubeconfig from secret
+        run: |
+          echo "$KUBE_CONFIG" > kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Deploy Online Boutique manifests
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl apply -f release/kubernetes-manifests.yaml
+          kubectl get pods
